@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Add Workout</h2>
+
+  <form method="POST" action="{{ url_for('main.add_workout') }}">
+    <label>Workout:</label><br>
+    <input type="text" name="workout" required><br><br>
+
+    <label>Duration (minutes):</label><br>
+    <input type="number" name="duration" required><br><br>
+
+    <button type="submit">Add Workout</button>
+  </form>
+{% endblock %}

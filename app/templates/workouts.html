@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Logged Workouts</h2>
+
+{% if workouts %}
+  <ul>
+    {% for w in workouts %}
+      <li>{{ loop.index }}. {{ w.workout }} — {{ w.duration }} minutes</li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No workouts logged yet.</p>
+{% endif %}
+{% endblock %}
