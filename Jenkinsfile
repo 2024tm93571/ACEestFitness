@@ -139,9 +139,6 @@ pipeline {
         }
 
         stage('📦 Push to Docker Hub') {
-            when {
-                branch 'main'
-            }
             steps {
                 echo "Pushing to Docker Hub..."
                 withCredentials([usernamePassword(
@@ -149,11 +146,31 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
+                        sh '''
+                        DOCKER_REPO="itzzmeakhi/aceestfitness"
+
+                        echo "🔐 Logging into Docker Hub..."
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
+                        echo "📤 Pushing Docker images..."
+                        docker push ${DOCKER_REPO}:${BUILD_TAG}
+                        docker tag ${DOCKER_REPO}:${BUILD_TAG} ${DOCKER_REPO}:latest
+                        docker push ${DOCKER_REPO}:latest
+
+                        echo "🚪 Logging out of Docker Hub..."
+                        docker logout
+                        '''
+                    }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                withKubeConfig([credentialsId: 'kubeconfig-cred']) {
                     sh '''
-                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    docker push ${DOCKER_REPO}:${BUILD_TAG}
-                    docker push ${DOCKER_REPO}:latest
-                    docker logout
+                    kubectl apply -f k8s/aceestfitness-deployment.yaml
+                    kubectl apply -f k8s/aceestfitness-service.yaml
+                    kubectl rollout status deployment/aceestfitness-deployment
                     '''
                 }
             }
